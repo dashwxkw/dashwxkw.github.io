@@ -93,13 +93,18 @@
         const ACCESS_KEY = '72c1acd9-dbae-4fb6-a1f7-dfc4d92950f9'; 
         const FORM_ENDPOINT = 'https://api.web3forms.com/submit';
 
+        // --- ЭЛЕМЕНТЫ DOM ---
         const openBtn = document.getElementById('openModalBtn');
         const closeBtn = document.getElementById('closeModalBtn');
         const overlay = document.getElementById('modalOverlay');
         const form = document.getElementById('feedbackForm');
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('formMessage');
+        
+        // Переменная вынесена наверх, чтобы не было ошибки ReferenceError
+        const formInputs = form.querySelectorAll('input, textarea');
 
+        // --- ЛОГИКА ОТКРЫТИЯ/ЗАКРЫТИЯ ---
         function openForm() {
             overlay.classList.add('active');
             history.pushState({ modal: 'open' }, '', '#feedback-form');
@@ -127,7 +132,7 @@
 
         if (window.location.hash === '#feedback-form') openForm();
 
-        const formInputs = form.querySelectorAll('input, textarea');
+        // --- ЛОГИКА СОХРАНЕНИЯ В LOCALSTORAGE ---
         formInputs.forEach(input => {
             input.addEventListener('input', () => {
                 const data = {};
@@ -153,6 +158,7 @@
             }
         }
 
+        // --- ВАЛИДАЦИЯ ---
         function validateName(name) {
             const regex = /^[a-zA-Zа-яА-ЯёЁ\s\-]{2,}$/;
             return regex.test(name);
@@ -164,6 +170,7 @@
             return regex.test(cleanPhone);
         }
 
+        // --- ОТПРАВКА ФОРМЫ (FETCH) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); 
 
@@ -179,6 +186,7 @@
             let hasError = false;
             let errorMsg = '';
 
+            // Проверки на клиенте
             if (!validateName(nameInput.value.trim())) {
                 nameInput.classList.add('error-input');
                 hasError = true;
@@ -205,9 +213,8 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Отправка...';
 
-            // Создаем FormData и добавляем ключ доступа
             const formData = new FormData(form);
-            formData.append('access_key', ACCESS_KEY);
+            formData.append('access_key', ACCESS_KEY); // Добавляем ключ Web3Forms
 
             try {
                 const response = await fetch(FORM_ENDPOINT, {
@@ -220,6 +227,8 @@
                 if (!response.ok || !result.success) {
                     throw new Error(result.message || 'Ошибка при отправке');
                 }
+
+                // Успех
                 messageDiv.textContent = 'Сообщение успешно отправлено!';
                 messageDiv.classList.add('success');
                 form.reset();
