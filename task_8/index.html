@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма обратной связи</title>
     <style>
-        /* Сброс стилей и базовые настройки */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         
@@ -90,21 +89,18 @@
     </div>
 
     <script>
+        // Ваш ключ Web3Forms
         const ACCESS_KEY = '72c1acd9-dbae-4fb6-a1f7-dfc4d92950f9'; 
         const FORM_ENDPOINT = 'https://api.web3forms.com/submit';
 
-        // --- ЭЛЕМЕНТЫ DOM ---
         const openBtn = document.getElementById('openModalBtn');
         const closeBtn = document.getElementById('closeModalBtn');
         const overlay = document.getElementById('modalOverlay');
         const form = document.getElementById('feedbackForm');
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('formMessage');
-        
-        // Переменная вынесена наверх, чтобы не было ошибки ReferenceError
         const formInputs = form.querySelectorAll('input, textarea');
 
-        // --- ЛОГИКА ОТКРЫТИЯ/ЗАКРЫТИЯ ---
         function openForm() {
             overlay.classList.add('active');
             history.pushState({ modal: 'open' }, '', '#feedback-form');
@@ -132,7 +128,6 @@
 
         if (window.location.hash === '#feedback-form') openForm();
 
-        // --- ЛОГИКА СОХРАНЕНИЯ В LOCALSTORAGE ---
         formInputs.forEach(input => {
             input.addEventListener('input', () => {
                 const data = {};
@@ -158,7 +153,6 @@
             }
         }
 
-        // --- ВАЛИДАЦИЯ ---
         function validateName(name) {
             const regex = /^[a-zA-Zа-яА-ЯёЁ\s\-]{2,}$/;
             return regex.test(name);
@@ -170,7 +164,6 @@
             return regex.test(cleanPhone);
         }
 
-        // --- ОТПРАВКА ФОРМЫ (FETCH) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); 
 
@@ -186,11 +179,10 @@
             let hasError = false;
             let errorMsg = '';
 
-            // Проверки на клиенте
             if (!validateName(nameInput.value.trim())) {
                 nameInput.classList.add('error-input');
                 hasError = true;
-                errorMsg = 'В поле ФИО допускаются только буквы, пробелы и дефисы (мин. 2 символа).';
+                errorMsg = 'В поле ФИО допускаются только буквы (мин. 2 символа).';
             } else if (!emailInput.checkValidity()) {
                 emailInput.classList.add('error-input');
                 hasError = true;
@@ -201,7 +193,7 @@
                 errorMsg = 'Телефон должен состоять из 10–15 цифр.';
             } else if (!agreementInput.checked) {
                 hasError = true;
-                errorMsg = 'Необходимо согласиться с политикой обработки данных.';
+                errorMsg = 'Необходимо согласиться с политикой.';
             }
 
             if (hasError) {
@@ -214,12 +206,13 @@
             submitBtn.textContent = 'Отправка...';
 
             const formData = new FormData(form);
-            formData.append('access_key', ACCESS_KEY); // Добавляем ключ Web3Forms
+            formData.append('access_key', ACCESS_KEY);
 
             try {
                 const response = await fetch(FORM_ENDPOINT, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
                 });
 
                 const result = await response.json();
@@ -228,7 +221,6 @@
                     throw new Error(result.message || 'Ошибка при отправке');
                 }
 
-                // Успех
                 messageDiv.textContent = 'Сообщение успешно отправлено!';
                 messageDiv.classList.add('success');
                 form.reset();
